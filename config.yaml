@@ -1,0 +1,57 @@
+gitea:
+  tlsConfig:
+    insecureSkipVerify: true
+  url: "https://git.lab.on-clouds.at"
+  credentials:
+    username: "admin"
+    password: ""
+  orgs:
+    - name: "on-clouds"
+      visibility: "private"
+  repositories:
+    - name: gitops
+      org: on-clouds
+      visibility: "private"
+      description: "GitOps Repository"
+      stages:
+        - name: "development"
+        - name: "staging"
+        - name: "production"
+
+harbor:
+  tlsConfig:
+    insecureSkipVerify: true
+  url: "https://harbor.lab.on-clouds.at"
+  credentials:
+    username: "admin"
+    password: ""
+  configuration:
+    self_registration: false
+    project_creation_restriction: "adminonly"
+  projects:
+    - name: "on-clouds"
+      metadata:
+        "public": "false"
+        "auto_scan": "true"
+        "auto_sbom_generation": "true"
+  registries:
+    - name: "github-ghcr"
+      description: "GitHub Container Registry"
+      type: "github-ghcr"
+      url: "https://ghcr.io"
+      credentials:
+        access_key: "git"
+        access_secret: ""
+  robotAccounts:
+    - name: "deployment-robot"
+      description: "Robot Account"
+      project: "on-clouds"
+  replications:
+    - repository: podtato-head/podtato-head-app
+      destinationNamespace: podtato-head
+      sourceRegistry: github-ghcr
+      crontab: "0 */30 * * * *"
+
+
+
+
