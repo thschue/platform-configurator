@@ -21,4 +21,4 @@ WORKDIR /
 COPY --from=builder /workspace/platformer .
 USER 65532:65532
 
-CMD ["/git-releaser", "update"]
+CMD ["/platformer", "run" ]
