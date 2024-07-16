@@ -12,11 +12,8 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/tools/clientcmd"
-	"k8s.io/client-go/util/homedir"
 	"log"
 	"net/http"
-	"path/filepath"
 	"text/template"
 )
 
@@ -54,10 +51,9 @@ func (g *Config) createDeployKey(repository Repository) (*gitea.Response, error)
 }
 
 func createKubernetesSecretForArgoCD(namespace, secretName, privateKey string, repo Repository) error {
-	kubeconfigPath := filepath.Join(homedir.HomeDir(), ".kube", "config")
-	config, err := clientcmd.BuildConfigFromFlags("", kubeconfigPath)
+	config, err := helpers.BuildKubeConfig()
 	if err != nil {
-		return fmt.Errorf("failed to build kubeconfig: %w", err)
+		return fmt.Errorf("failed to build kubernetes config: %w", err)
 	}
 
 	clientset, err := kubernetes.NewForConfig(config)
