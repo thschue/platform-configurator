@@ -47,6 +47,8 @@ var runCmd = &cobra.Command{
 			}
 		}
 
+		fmt.Println(cfg)
+
 		for _, project := range cfg.Harbor.Projects {
 			err := cfg.Harbor.CreateProject(project)
 			if err != nil {
@@ -81,6 +83,8 @@ var runCmd = &cobra.Command{
 				log.Println("Error creating organization: %w", err)
 			}
 		}
+
+		fmt.Println("Hello 4")
 
 		for _, repo := range cfg.Gitea.Repositories {
 			err := cfg.Gitea.CreateRepository(repo.Organization, repo)

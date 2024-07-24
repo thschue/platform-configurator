@@ -5,6 +5,8 @@ type AppSetTemplateData struct {
 	GiteaSshUrl string
 	GitOrg      string
 	GitRepo     string
+	ArgoProject string
+	ArgoCluster string
 }
 
 const appSetTemplate = `
@@ -23,7 +25,7 @@ spec:
     metadata:
       name: {{ "'{{path.basename}}'" }}
     spec:
-      project: default
+      project: {{ .ArgoProject }}
       sources:
       - repoURL: {{ "'{{repoURL}}'" }}
         targetRevision: {{ "'{{targetRevision}}'" }}
@@ -38,7 +40,7 @@ spec:
         targetRevision: main
         ref: values
       destination:
-        server: https://kubernetes.default.svc
+        server: {{ .ArgoCluster }}
         namespace: {{ "'{{path.basename}}'" }}
       syncPolicy:
         automated: 
@@ -46,5 +48,4 @@ spec:
         syncOptions:
           - CreateNamespace=true
           - ServerSideApply={{ "'{{serverSideApply}}'" }}
-
 `

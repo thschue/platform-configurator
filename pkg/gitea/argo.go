@@ -42,7 +42,7 @@ func (g *Config) createDeployKey(repository Repository) (*gitea.Response, error)
 		return resp, fmt.Errorf("failed to create deploy key: %w", err)
 	}
 
-	err = createKubernetesSecretForArgoCD("default", repository.Name+"-deploy-key", privateKey, repository)
+	err = createKubernetesSecretForArgoCD(g.Namespace, repository.Name+"-deploy-key", privateKey, repository, g.SSHUrl)
 	if err != nil {
 		return resp, fmt.Errorf("failed to create kubernetes secret: %w", err)
 	}
@@ -50,7 +50,7 @@ func (g *Config) createDeployKey(repository Repository) (*gitea.Response, error)
 	return resp, nil
 }
 
-func createKubernetesSecretForArgoCD(namespace, secretName, privateKey string, repo Repository) error {
+func createKubernetesSecretForArgoCD(namespace string, secretName, privateKey string, repo Repository, sshUrl string) error {
 	config, err := helpers.BuildKubeConfig()
 	if err != nil {
 		return fmt.Errorf("failed to build kubernetes config: %w", err)
@@ -69,7 +69,7 @@ func createKubernetesSecretForArgoCD(namespace, secretName, privateKey string, r
 			},
 		},
 		Data: map[string][]byte{
-			"url":           []byte("git@kds-deployment-stack-ssh-cluster:/" + repo.Organization + "/" + repo.Name + ".git"),
+			"url":           []byte(sshUrl + "/" + repo.Organization + "/" + repo.Name + ".git"),
 			"sshPrivateKey": []byte(privateKey),
 			"type":          []byte("git"),
 			"insecure":      []byte("true"),
@@ -85,13 +85,15 @@ func createKubernetesSecretForArgoCD(namespace, secretName, privateKey string, r
 	return nil
 }
 
-func (g *Config) createStageTemplate(stage string, gitOrg string, gitRepo string) (string, error) {
+func (g *Config) createStageTemplate(stage Stage, gitOrg string, gitRepo string) (string, error) {
 	// Create a new file
 	data := AppSetTemplateData{
-		Stage:       stage,
+		Stage:       stage.Name,
 		GiteaSshUrl: g.SSHUrl,
 		GitOrg:      gitOrg,
 		GitRepo:     gitRepo,
+		ArgoProject: stage.ArgoProject,
+		ArgoCluster: stage.ArgoCluster,
 	}
 
 	tmpl, err := template.New("appSetTemplate").Parse(appSetTemplate)
@@ -107,7 +109,7 @@ func (g *Config) createStageTemplate(stage string, gitOrg string, gitRepo string
 	return tpl.String(), nil
 }
 
-func (g *Config) commitAppSet(stage string, gitOrg string, gitRepo string) error {
+func (g *Config) commitAppSet(stage Stage, gitOrg string, gitRepo string) error {
 	client, err := gitea.NewClient(g.Url, gitea.SetBasicAuth(g.Credentials.Username, g.Credentials.Password), gitea.SetHTTPClient(&http.Client{
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{
@@ -126,13 +128,13 @@ func (g *Config) commitAppSet(stage string, gitOrg string, gitRepo string) error
 	encodedContent := base64.StdEncoding.EncodeToString([]byte(content))
 
 	// Check if the file exists
-	fileDetail, resp, _ := client.GetContents(gitOrg, gitRepo, "main", stage+"/appset.yaml")
+	fileDetail, resp, _ := client.GetContents(gitOrg, gitRepo, "main", stage.Name+"/appset.yaml")
 	if resp.StatusCode == 404 {
 		// File does not exist, create it
 		opts := gitea.CreateFileOptions{
 			FileOptions: gitea.FileOptions{
 				BranchName: "main",
-				Message:    "Initial commit of AppSet " + stage,
+				Message:    "Initial commit of AppSet " + stage.Name,
 				Author: gitea.Identity{
 					Name:  "Deployer",
 					Email: "deploy@on-clouds.at",
@@ -144,7 +146,7 @@ func (g *Config) commitAppSet(stage string, gitOrg string, gitRepo string) error
 			},
 			Content: encodedContent,
 		}
-		_, _, err := client.CreateFile(gitOrg, gitRepo, stage+"/appset.yaml", opts)
+		_, _, err := client.CreateFile(gitOrg, gitRepo, stage.Name+"/appset.yaml", opts)
 		if err != nil {
 			return fmt.Errorf("failed to create file: %w", err)
 		}
@@ -153,7 +155,7 @@ func (g *Config) commitAppSet(stage string, gitOrg string, gitRepo string) error
 		opts := gitea.UpdateFileOptions{
 			FileOptions: gitea.FileOptions{
 				BranchName: "main",
-				Message:    "Initial commit of AppSet " + stage,
+				Message:    "Initial commit of AppSet " + stage.Name,
 				Author: gitea.Identity{
 					Name:  "Deployer",
 					Email: "deploy@on-clouds.at",
@@ -166,7 +168,7 @@ func (g *Config) commitAppSet(stage string, gitOrg string, gitRepo string) error
 			Content: encodedContent,
 			SHA:     fileDetail.SHA,
 		}
-		_, _, err := client.UpdateFile(gitOrg, gitRepo, stage+"/appset.yaml", opts)
+		_, _, err := client.UpdateFile(gitOrg, gitRepo, stage.Name+"/appset.yaml", opts)
 		if err != nil {
 			return fmt.Errorf("failed to update file: %w", err)
 		}

@@ -23,8 +23,11 @@ func BuildKubeConfig() (*rest.Config, error) {
 			return nil, fmt.Errorf("failed to create in-cluster config: %w", err)
 		}
 	} else {
-		// Fallback to kubeconfig for outside cluster usage
 		kubeconfigPath := filepath.Join(homedir.HomeDir(), ".kube", "config")
+		if os.Getenv("KUBECONFIG") != "" {
+			kubeconfigPath = os.Getenv("KUBECONFIG")
+		}
+		// Fallback to kubeconfig for outside cluster usage
 		config, err = clientcmd.BuildConfigFromFlags("", kubeconfigPath)
 		if err != nil {
 			return nil, fmt.Errorf("failed to build kubeconfig: %w", err)

@@ -12,22 +12,24 @@ type Config struct {
 	Orgs         []Organization      `yaml:"orgs"`
 	Repositories []Repository        `yaml:"repositories"`
 	TLSConfig    helpers.TlsConfig   `yaml:"tlsConfig"`
+	Namespace    string              `yaml:"namespace"`
 }
 
 type Organization struct {
-	Name         string            `yaml:"name"`
-	Visibility   gitea.VisibleType `yaml:"visibility"`
-	Repositories []Repository      `yaml:"repositories"`
+	Name       string            `yaml:"name"`
+	Visibility gitea.VisibleType `yaml:"visibility"`
 }
 
 type Repository struct {
-	Name         string   `yaml:"name"`
-	Organization string   `yaml:"org"`
-	Description  string   `yaml:"description"`
-	Private      bool     `yaml:"private"`
-	Stages       []Stages `yaml:"stages"`
+	Name         string  `yaml:"name"`
+	Organization string  `yaml:"org"`
+	Description  string  `yaml:"description"`
+	Private      bool    `yaml:"private"`
+	Stages       []Stage `yaml:"stages"`
 }
 
-type Stages struct {
-	Name string `yaml:"name"`
+type Stage struct {
+	Name        string `yaml:"name"`
+	ArgoProject string `yaml:"argo_project"`
+	ArgoCluster string `yaml:"argo_cluster"`
 }

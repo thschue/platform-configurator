@@ -116,17 +116,24 @@ func (g *Config) CreateRepository(organization string, repo Repository) error {
 		log.Println(fmt.Sprintf("Repository %s already exists", repo.Name))
 	}
 
+	for _, stage := range repo.Stages {
+		if stage.ArgoProject == "" {
+			stage.ArgoProject = "default"
+		}
+
+		if stage.ArgoCluster == "" {
+			stage.ArgoCluster = "https://kubernetes.default.svc"
+		}
+		err = g.commitAppSet(stage, organization, repo.Name)
+		if err != nil {
+			return fmt.Errorf("error committing appset: %w", err)
+		}
+	}
+
 	resp, err = g.createDeployKey(repo)
 	fmt.Println(err)
 	if err != nil && !errors.Is(err, fmt.Errorf("failed to create deploy key: A key with the same name already exists")) {
 		return fmt.Errorf("error creating deploy key: %w", err)
-	}
-
-	for _, stage := range repo.Stages {
-		err = g.commitAppSet(stage.Name, organization, repo.Name)
-		if err != nil {
-			return fmt.Errorf("error committing appset: %w", err)
-		}
 	}
 
 	return nil
