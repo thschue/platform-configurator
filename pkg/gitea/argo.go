@@ -76,6 +76,10 @@ func createKubernetesSecretForArgoCD(namespace string, secretName, privateKey st
 		},
 	}
 
+	if namespace == "" {
+		namespace = "argocd"
+	}
+
 	_, err = clientset.CoreV1().Secrets(namespace).Create(context.TODO(), secret, v1.CreateOptions{})
 	if err != nil && !errors.IsAlreadyExists(err) {
 		return fmt.Errorf("failed to create secret: %w", err)
