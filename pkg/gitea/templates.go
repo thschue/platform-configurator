@@ -40,7 +40,7 @@ spec:
         targetRevision: main
         ref: values
       destination:
-        server: {{ .ArgoCluster }}
+        name: {{ .ArgoCluster }}
         namespace: {{ "'{{path.basename}}'" }}
       syncPolicy:
         automated: 
