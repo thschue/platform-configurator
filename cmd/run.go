@@ -84,8 +84,6 @@ var runCmd = &cobra.Command{
 			}
 		}
 
-		fmt.Println("Hello 4")
-
 		for _, repo := range cfg.Gitea.Repositories {
 			err := cfg.Gitea.CreateRepository(repo.Organization, repo)
 			if err != nil {

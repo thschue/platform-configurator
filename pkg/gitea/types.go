@@ -22,7 +22,7 @@ type Organization struct {
 
 type Repository struct {
 	Name         string  `yaml:"name"`
-	Organization string  `yaml:"org"`
+	Organization string  `yaml:"organization"`
 	Description  string  `yaml:"description"`
 	Private      bool    `yaml:"private"`
 	Stages       []Stage `yaml:"stages"`

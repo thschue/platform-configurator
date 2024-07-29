@@ -18,6 +18,15 @@ func New(filename string) (*Config, error) {
 		return nil, fmt.Errorf("error reading config: %w", err)
 	}
 
+	v.SetDefault("gitea.url", "")
+	v.SetDefault("gitea.sshUrl", "")
+	v.SetDefault("gitea.credentials.username", "")
+	v.SetDefault("gitea.credentials.password", "")
+
+	v.SetDefault("harbor.url", "")
+	v.SetDefault("harbor.credentials.username", "")
+	v.SetDefault("harbor.credentials.password", "")
+
 	v.AutomaticEnv()
 
 	var config *Config
@@ -35,6 +44,6 @@ func New(filename string) (*Config, error) {
 			},
 		}
 	}
-	
+
 	return config, nil
 }
