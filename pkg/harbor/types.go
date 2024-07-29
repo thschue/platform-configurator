@@ -42,6 +42,6 @@ type Registry struct {
 }
 
 type RegistryCredentials struct {
-	AccessKey    string `yaml:"access_key"`
-	AccessSecret string `yaml:"access_secret"`
+	AccessKey    string `yaml:"accessKey"`
+	AccessSecret string `yaml:"accessSecret"`
 }

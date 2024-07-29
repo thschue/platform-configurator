@@ -32,6 +32,6 @@ func New(filename string) (*Config, error) {
 	if err := v.Unmarshal(&config); err != nil {
 		return nil, fmt.Errorf("error unmarshalling config: %w", err)
 	}
-
+	
 	return config, nil
 }
