@@ -8,7 +8,7 @@ import (
 )
 
 func (h *Config) CreateReplicationRule(rule ReplicationRule) error {
-	src := h.getRegistryId(rule.Source)
+	src := h.getRegistryId(rule.SourceRegistry)
 
 	jsonData := map[string]interface{}{
 		"dest_namespace": rule.DestinationNamespace,

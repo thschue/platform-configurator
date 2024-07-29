@@ -31,9 +31,9 @@ harbor:
   projects:
     - name: "on-clouds"
       metadata:
-        "public": "false"
-        "auto_scan": "true"
-        "auto_sbom_generation": "true"
+        "public": false
+        "auto_scan": true
+        "auto_sbom_generation": true
   registries:
     - name: "github-ghcr"
       description: "GitHub Container Registry"

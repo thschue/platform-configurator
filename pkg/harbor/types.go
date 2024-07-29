@@ -2,7 +2,6 @@ package harbor
 
 import (
 	"github.com/thschue/platformer/pkg/helpers"
-	"net/http"
 )
 
 type Config struct {
@@ -13,19 +12,17 @@ type Config struct {
 	Replications  []ReplicationRule      `yaml:"replications"`
 	Credentials   helpers.Credentials    `yaml:"credentials"`
 	TLSConfig     helpers.TlsConfig      `yaml:"tlsConfig"`
-	Client        http.Client
-	RobotAccounts []RobotAccount `yaml:"robotAccounts"`
+	RobotAccounts []RobotAccount         `yaml:"robotAccounts"`
 }
 
 type Project struct {
-	Name             string                 `yaml:"name"`
-	Metadata         map[string]interface{} `yaml:"metadata"`
-	ReplicationRules []ReplicationRule      `yaml:"replicationRules"`
+	Name     string                 `yaml:"name"`
+	Metadata map[string]interface{} `yaml:"metadata"`
 }
 
 type ReplicationRule struct {
 	Repository           string `yaml:"repository"`
-	Source               string `yaml:"sourceRegistry"`
+	SourceRegistry       string `yaml:"sourceRegistry"`
 	DestinationNamespace string `yaml:"destinationNamespace"`
 	Crontab              string `yaml:"crontab"`
 }

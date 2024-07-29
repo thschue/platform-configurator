@@ -1,10 +1,8 @@
 package config
 
 import (
-	"crypto/tls"
 	"fmt"
 	"github.com/spf13/viper"
-	"net/http"
 	"strings"
 )
 
@@ -33,16 +31,6 @@ func New(filename string) (*Config, error) {
 
 	if err := v.Unmarshal(&config); err != nil {
 		return nil, fmt.Errorf("error unmarshalling config: %w", err)
-	}
-
-	if config.Harbor.Url != "" {
-		config.Harbor.Client = http.Client{
-			Transport: &http.Transport{
-				TLSClientConfig: &tls.Config{
-					InsecureSkipVerify: config.Harbor.TLSConfig.InsecureSkipVerify,
-				},
-			},
-		}
 	}
 
 	return config, nil

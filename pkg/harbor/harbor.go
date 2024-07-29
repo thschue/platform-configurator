@@ -2,6 +2,7 @@ package harbor
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -25,6 +26,14 @@ func (h *Config) IsAvailable() (bool, error) {
 }
 
 func (h *Config) queryApi(method string, endpoint string, data map[string]interface{}) (io.ReadCloser, int, error) {
+	client := http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: h.TLSConfig.InsecureSkipVerify,
+			},
+		},
+	}
+
 	jsonData, err := json.Marshal(data)
 	if err != nil {
 		return nil, 0, fmt.Errorf("error marshalling json: %w", err)
@@ -39,10 +48,11 @@ func (h *Config) queryApi(method string, endpoint string, data map[string]interf
 	req.Header.Set("Content-Type", "application/json")
 	req.SetBasicAuth(h.Credentials.Username, h.Credentials.Password)
 
-	resp, err := h.Client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return resp.Body, resp.StatusCode, fmt.Errorf("error querying api: %w", err)
 	}
+
 	return resp.Body, resp.StatusCode, nil
 
 }
