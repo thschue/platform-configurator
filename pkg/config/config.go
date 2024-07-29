@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/spf13/viper"
 	"net/http"
-	"os"
 	"strings"
 )
 
@@ -36,7 +35,6 @@ func New(filename string) (*Config, error) {
 			},
 		}
 	}
-
-	os.Exit(0)
+	
 	return config, nil
 }
