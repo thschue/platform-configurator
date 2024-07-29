@@ -3,30 +3,28 @@ package config
 import (
 	"crypto/tls"
 	"fmt"
-	"gopkg.in/yaml.v3"
-	"io"
+	"github.com/spf13/viper"
 	"net/http"
 	"os"
+	"strings"
 )
 
 func New(filename string) (*Config, error) {
-	file := filename
-	yamlFile, err := os.Open(file)
-	if err != nil {
-		return nil, fmt.Errorf("error opening file: %w", err)
-	}
-	defer yamlFile.Close()
+	v := viper.New()
+	v.SetConfigFile(filename)
+	v.SetConfigType("yaml")
+	v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 
-	yamlBytes, err := io.ReadAll(yamlFile)
-	if err != nil {
-		return nil, fmt.Errorf("error reading file: %w", err)
+	if err := v.ReadInConfig(); err != nil {
+		return nil, fmt.Errorf("error reading config: %w", err)
 	}
+
+	v.AutomaticEnv()
 
 	var config *Config
 
-	err = yaml.Unmarshal(yamlBytes, &config)
-	if err != nil {
-		return nil, fmt.Errorf("error unmarshalling yaml: %w", err)
+	if err := v.Unmarshal(&config); err != nil {
+		return nil, fmt.Errorf("error unmarshalling config: %w", err)
 	}
 
 	if config.Harbor.Url != "" {
@@ -39,5 +37,6 @@ func New(filename string) (*Config, error) {
 		}
 	}
 
+	os.Exit(0)
 	return config, nil
 }
