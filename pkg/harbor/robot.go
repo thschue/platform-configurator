@@ -1,9 +1,15 @@
 package harbor
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 )
+
+type RobotResponse struct {
+	Name   string `json:"name"`
+	Secret string `json:"secret"`
+}
 
 func (h *Config) CreateRobotAccount(account RobotAccount) error {
 	data := map[string]interface{}{
@@ -47,14 +53,14 @@ func (h *Config) CreateRobotAccount(account RobotAccount) error {
 		},
 	}
 
-	_, errorCode, err := h.queryApi("POST", h.Url+robotAccountApi, data)
+	resp, errorCode, err := h.queryApi("POST", h.Url+robotAccountApi, data)
 	if err != nil && errorCode != 409 {
 		return fmt.Errorf("error creating robot: %w", err)
 	}
 
 	if errorCode == 409 {
 		log.Println("Robot already exists, updating robot")
-		_, errorCode, err = h.queryApi("PUT", h.Url+robotAccountApi+"/"+account.Name, data)
+		resp, errorCode, err = h.queryApi("PUT", h.Url+robotAccountApi+"/"+account.Name, data)
 		if err != nil {
 			return fmt.Errorf("error updating robot: %w", err)
 		}
@@ -62,5 +68,19 @@ func (h *Config) CreateRobotAccount(account RobotAccount) error {
 	} else {
 		log.Println(fmt.Sprintf("Robot %s created", account.Name))
 	}
+
+	var response RobotResponse
+	err = json.NewDecoder(resp).Decode(&response)
+	if err != nil {
+		log.Println("Could not decode response")
+	}
+
+	fmt.Println(response)
+
+	err = h.createKubernetesSecretForArgoCD("argocd", RobotAccount{Name: response.Name, Token: response.Secret}, "helm-"+account.Name)
+	if err != nil {
+		log.Println("Could not create secret")
+	}
+
 	return nil
 }
