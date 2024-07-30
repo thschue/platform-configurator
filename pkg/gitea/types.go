@@ -30,6 +30,6 @@ type Repository struct {
 
 type Stage struct {
 	Name        string `yaml:"name"`
-	ArgoProject string `yaml:"argo_project"`
-	ArgoCluster string `yaml:"argo_cluster"`
+	ArgoProject string `yaml:"argoProject"`
+	ArgoCluster string `yaml:"argoCluster"`
 }
